@@ -1,48 +1,62 @@
-import {getPages} from "../lib/utils.js";
+import { getPages } from "../lib/utils.js";
 
-export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) => {
-    const pageTemplate = pages.firstElementChild.cloneNode(true);    
-    pages.firstElementChild.remove();                                
-    
-    let pageCount; 
+export const initPagination = (
+  { pages, fromRow, toRow, totalRows },
+  createPage
+) => {
+  const pageTemplate = pages.firstElementChild.cloneNode(true);
+  pages.firstElementChild.remove();
 
-    const applyPagination = (query, state, action) => {
-        const limit = state.rowsPerPage;  
-        let page = state.page;
+  let pageCount;
 
-        // #2.6 — обработать действия
-        if (action) switch(action.name) {
-            case 'prev': page = Math.max(1, page - 1); break;
-            case 'next': page = Math.min(pageCount || 1, page + 1); break;
-            case 'first': page = 1; break;
-            case 'last': page = pageCount || 1; break;
-        }
+  const applyPagination = (query, state, action) => {
+    const limit = state.rowsPerPage;
+    let page = state.page;
 
-        return Object.assign({}, query, { // добавим параметры к query, но не изменяем исходный объект
-            limit,
-            page
-        });
-    };
+    // #2.6 — обработать действия
+    if (action)
+      switch (action.name) {
+        case "prev":
+          page = Math.max(1, page - 1);
+          break;
+        case "next":
+          page = Math.min(pageCount || 1, page + 1);
+          break;
+        case "first":
+          page = 1;
+          break;
+        case "last":
+          page = pageCount || 1;
+          break;
+      }
 
-    const updatePagination = (total, { page, limit }) => {
+    return Object.assign({}, query, {
+      // добавим параметры к query, но не изменяем исходный объект
+      limit,
+      page,
+    });
+  };
 
-        pageCount = Math.ceil(total / limit); 
-        
-        // #2.4 — получить список видимых страниц и вывести их
-        const visiblePages = getPages(page, pageCount, 5);
-        pages.replaceChildren(...visiblePages.map(pageNumber => {
-            const el = pageTemplate.cloneNode(true);
-            return createPage(el, pageNumber, pageNumber === page);
-        }));
+  const updatePagination = (total, { page, limit }) => {
+    pageCount = Math.ceil(total / limit);
 
-         // #2.5 — обновить статус пагинации
-        fromRow.textContent = (page - 1) * limit + 1;                    
-        toRow.textContent = Math.min((page * limit), total);            
-        totalRows.textContent = total;                                
-    };
+    // #2.4 — получить список видимых страниц и вывести их
+    const visiblePages = getPages(page, pageCount, 5);
+    pages.replaceChildren(
+      ...visiblePages.map((pageNumber) => {
+        const el = pageTemplate.cloneNode(true);
+        return createPage(el, pageNumber, pageNumber === page);
+      })
+    );
 
-    return {
-        applyPagination,
-        updatePagination
-    };
+    // #2.5 — обновить статус пагинации
+    fromRow.textContent = (page - 1) * limit + 1;
+    toRow.textContent = Math.min(page * limit, total);
+    totalRows.textContent = total;
+  };
+
+  return {
+    applyPagination,
+    updatePagination,
+  };
 };
