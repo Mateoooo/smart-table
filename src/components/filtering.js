@@ -23,11 +23,27 @@ export function initFiltering(elements) {
   const applyFiltering = (query, state, action) => {
     // код с обработкой очистки поля
     if (action && action.name === "clear") {
-      const parent = action.closest(".filter");
-      const input = parent.querySelector("input");
-      if (input) {
-        input.value = "";
-        state[input.name] = "";
+      const field = action.dataset.field;
+
+      const elementKey = Object.keys(elements).find(
+        (key) => elements[key] && elements[key].name === field
+      );
+
+      if (elementKey) {
+        const element = elements[elementKey];
+
+        // Очищаем поле
+        if (element.tagName === "INPUT") {
+          element.value = "";
+        } else if (element.tagName === "SELECT") {
+          element.selectedIndex = 0;
+        }
+
+        state[element.name] = "";
+
+        const newQuery = { ...query };
+        delete newQuery[`filter[${element.name}]`];
+        return newQuery;
       }
     }
 
